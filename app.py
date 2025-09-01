@@ -4,7 +4,7 @@ import threading
 # إنشاء تطبيق Flask
 app = Flask(__name__)
 
-# قالب HTML بتصميم iOS متقدم مع خيارات تصفية متعددة
+# قالب HTML بتصميم iOS متقدم مع أقسام متعددة
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -86,43 +86,7 @@ HTML_TEMPLATE = """
             font-weight: 500;
         }
 
-        .filter-tabs {
-            display: flex;
-            background: var(--ios-card-bg);
-            border-radius: 12px;
-            margin-bottom: 16px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .filter-tab {
-            flex: 1;
-            padding: 14px;
-            text-align: center;
-            background: var(--ios-card-bg);
-            border: none;
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--ios-text-secondary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .filter-tab.active {
-            background: var(--ios-blue);
-            color: white;
-            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
-        }
-
-        .filter-content {
-            display: none;
-        }
-
-        .filter-content.active {
-            display: block;
-        }
-
-        .ios-card {
+        .filter-section {
             background: var(--ios-card-bg);
             border-radius: 16px;
             margin-bottom: 20px;
@@ -130,7 +94,7 @@ HTML_TEMPLATE = """
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        .ios-card-header {
+        .section-header {
             padding: 18px;
             border-bottom: 1px solid var(--ios-gray-3);
             font-weight: 700;
@@ -138,11 +102,79 @@ HTML_TEMPLATE = """
             display: flex;
             align-items: center;
             justify-content: space-between;
+            background: var(--ios-gray-4);
         }
 
-        .ios-card-header i {
+        .section-header i {
             color: var(--ios-blue);
             font-size: 20px;
+        }
+
+        .section-content {
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .countries-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .country-item {
+            background: var(--ios-gray-4);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .country-item.selected {
+            background: rgba(0, 122, 255, 0.1);
+            border-color: var(--ios-blue);
+            transform: scale(1.05);
+        }
+
+        .country-item:hover {
+            background: var(--ios-gray-3);
+        }
+
+        .country-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .country-count {
+            font-size: 12px;
+            color: var(--ios-text-secondary);
+            background: var(--ios-card-bg);
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .search-container {
+            padding: 16px;
+            border-bottom: 1px solid var(--ios-gray-3);
+        }
+
+        .ios-search {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--ios-gray-4);
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .ios-search:focus {
+            outline: none;
+            background: var(--ios-gray-3);
         }
 
         .ios-list {
@@ -152,7 +184,7 @@ HTML_TEMPLATE = """
         .ios-list-item {
             display: flex;
             align-items: center;
-            padding: 16px;
+            padding: 14px;
             border-bottom: 1px solid var(--ios-gray-3);
             position: relative;
         }
@@ -174,11 +206,11 @@ HTML_TEMPLATE = """
         }
 
         .ios-checkbox-custom {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             border: 2px solid var(--ios-gray-2);
-            border-radius: 7px;
-            margin-right: 14px;
+            border-radius: 6px;
+            margin-right: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -194,7 +226,7 @@ HTML_TEMPLATE = """
         .ios-checkbox:checked + .ios-checkbox-label .ios-checkbox-custom::after {
             content: '✓';
             color: white;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
         }
 
@@ -203,48 +235,46 @@ HTML_TEMPLATE = """
         }
 
         .filter-name {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .filter-details {
-            font-size: 15px;
+            font-size: 14px;
             color: var(--ios-text-secondary);
         }
 
         .filter-badge {
             background: var(--ios-gray-4);
             color: var(--ios-text-secondary);
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 14px;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 12px;
             font-weight: 600;
         }
 
-        .bank-type-info {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 8px;
+        .select-all-container {
+            padding: 14px;
+            border-bottom: 1px solid var(--ios-gray-3);
+            background: var(--ios-gray-4);
         }
 
-        .bank-badge {
-            background: rgba(0, 122, 255, 0.12);
+        .show-more {
+            text-align: center;
+            padding: 12px;
             color: var(--ios-blue);
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-size: 13px;
             font-weight: 600;
+            cursor: pointer;
+            background: var(--ios-gray-4);
         }
 
-        .type-badge {
-            background: rgba(52, 199, 89, 0.12);
-            color: var(--ios-green);
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
+        .show-more:hover {
+            background: var(--ios-gray-3);
+        }
+
+        .hidden {
+            display: none;
         }
 
         .ios-button {
@@ -274,68 +304,13 @@ HTML_TEMPLATE = """
             box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
         }
 
-        .ios-footer {
-            text-align: center;
-            color: var(--ios-text-secondary);
-            font-size: 14px;
-            margin-top: 24px;
-            padding: 16px;
-            font-weight: 500;
-        }
-
-        .search-container {
-            padding: 16px;
-            border-bottom: 1px solid var(--ios-gray-3);
-        }
-
-        .ios-search {
-            width: 100%;
-            padding: 14px 18px;
-            background: var(--ios-gray-4);
-            border: none;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: 500;
-        }
-
-        .ios-search:focus {
-            outline: none;
-            background: var(--ios-gray-3);
-        }
-
-        .stats-container {
-            display: flex;
-            justify-content: space-between;
-            padding: 16px;
-            background: var(--ios-gray-4);
-            border-radius: 12px;
-            margin: 16px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--ios-blue);
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: var(--ios-text-secondary);
-            font-weight: 500;
-        }
-
-        .select-all-container {
-            padding: 16px;
-            border-bottom: 1px solid var(--ios-gray-3);
-            background: var(--ios-gray-4);
+        .ios-button:disabled {
+            background: var(--ios-gray-2);
+            cursor: not-allowed;
+            box-shadow: none;
         }
 
         .success-animation {
-            display: none;
             text-align: center;
             padding: 40px 20px;
         }
@@ -370,6 +345,32 @@ HTML_TEMPLATE = """
             animation: stroke .3s cubic-bezier(0.650, 0.000, 0.450, 1.000) .8s forwards;
         }
 
+        .success-message {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--ios-green);
+            margin-bottom: 10px;
+        }
+
+        .success-details {
+            font-size: 16px;
+            color: var(--ios-text-secondary);
+            font-weight: 500;
+        }
+
+        .selection-info {
+            background: var(--ios-gray-4);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin: 12px 0;
+            font-size: 14px;
+            color: var(--ios-text-secondary);
+        }
+
+        .selection-info strong {
+            color: var(--ios-blue);
+        }
+
         @keyframes stroke {
             100% { stroke-dashoffset: 0; }
         }
@@ -382,116 +383,95 @@ HTML_TEMPLATE = """
         @keyframes fill {
             100% { box-shadow: 0 0 30px rgba(52, 199, 89, 0.2); }
         }
-
-        .success-message {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--ios-green);
-            margin-bottom: 10px;
-        }
-
-        .success-details {
-            font-size: 16px;
-            color: var(--ios-text-secondary);
-            font-weight: 500;
-        }
     </style>
 </head>
 <body>
     <div class="ios-container">
         <div class="ios-header">
             <h1><i class="fas fa-filter"></i> Advanced Card Filter</h1>
-            <p>Filter cards by country, bank, or type</p>
+            <p>Select countries, banks, and card types to filter</p>
         </div>
 
-        <div class="filter-tabs">
-            <button class="filter-tab active" onclick="showFilterTab('countries')">Countries</button>
-            <button class="filter-tab" onclick="showFilterTab('banks')">Banks</button>
-            <button class="filter-tab" onclick="showFilterTab('types')">Types</button>
-        </div>
-
-        <div class="ios-card">
-            <div class="stats-container">
-                <div class="stat-item">
-                    <div class="stat-number">{{ total_cards }}</div>
-                    <div class="stat-label">Total Cards</div>
+        <form method="POST" id="filterForm">
+            <!-- Countries Section -->
+            <div class="filter-section">
+                <div class="section-header">
+                    <span><i class="fas fa-globe"></i> Countries</span>
+                    <span class="filter-badge">{{ countries|length }} countries</span>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number">{{ total_countries }}</div>
-                    <div class="stat-label">Countries</div>
+                
+                <div class="search-container">
+                    <input type="text" class="ios-search" id="countrySearch" placeholder="Search countries..." onkeyup="filterItems('country')">
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number">{{ total_banks }}</div>
-                    <div class="stat-label">Banks</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">{{ total_types }}</div>
-                    <div class="stat-label">Types</div>
-                </div>
-            </div>
-
-            <div class="search-container">
-                <input type="text" class="ios-search" id="searchInput" placeholder="Search..." onkeyup="filterItems()">
-            </div>
-
-            <div class="select-all-container">
-                <input type="checkbox" id="selectAll" class="ios-checkbox" onchange="toggleSelectAll()">
-                <label for="selectAll" class="ios-checkbox-label">
-                    <span class="ios-checkbox-custom"></span>
-                    <span class="filter-name">Select All</span>
-                </label>
-            </div>
-
-            <form method="POST" id="filterForm">
-                <!-- Countries Tab -->
-                <div id="countriesTab" class="filter-content active">
-                    <div class="ios-card-header">
-                        <span>Countries <i class="fas fa-globe"></i></span>
-                        <span class="filter-badge">{{ countries|length }}</span>
-                    </div>
-                    <ul class="ios-list">
-                        {% for country in countries %}
-                        <li class="ios-list-item filter-item">
-                            <input type="checkbox" id="country-{{ country.code }}" name="countries" value="{{ country.code }}" class="ios-checkbox filter-checkbox">
-                            <label for="country-{{ country.code }}" class="ios-checkbox-label">
-                                <span class="ios-checkbox-custom"></span>
-                                <div class="filter-info">
-                                    <div class="filter-name">{{ country.name }} ({{ country.code }})</div>
-                                    <div class="filter-details">
-                                        <span class="filter-badge">{{ country.count }} cards</span>
-                                        <div class="bank-type-info">
-                                            {% for bank in country.banks[:2] %}
-                                            <span class="bank-badge">{{ bank }}</span>
-                                            {% endfor %}
-                                            {% if country.banks|length > 2 %}
-                                            <span class="bank-badge">+{{ country.banks|length - 2 }}</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                            </label>
-                        </li>
+                
+                <div class="section-content">
+                    <div class="countries-grid" id="countriesGrid">
+                        {% for country in countries[:20] %}
+                        <div class="country-item" data-country="{{ country.code }}" onclick="toggleCountry('{{ country.code }}')">
+                            <div class="country-name">{{ country.name }}</div>
+                            <div class="country-count">{{ country.count }} cards</div>
+                        </div>
                         {% endfor %}
-                    </ul>
-                </div>
-
-                <!-- Banks Tab -->
-                <div id="banksTab" class="filter-content">
-                    <div class="ios-card-header">
-                        <span>Banks <i class="fas fa-university"></i></span>
-                        <span class="filter-badge">{{ banks|length }}</span>
                     </div>
+                    
+                    {% if countries|length > 20 %}
+                    <div id="moreCountries" class="hidden">
+                        {% for country in countries[20:] %}
+                        <div class="country-item" data-country="{{ country.code }}" onclick="toggleCountry('{{ country.code }}')">
+                            <div class="country-name">{{ country.name }}</div>
+                            <div class="country-count">{{ country.count }} cards</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="show-more" onclick="showMore('moreCountries', this)">
+                        Show All {{ countries|length }} Countries
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <input type="hidden" name="selected_countries" id="selectedCountries" value="">
+            </div>
+
+            <!-- Banks Section -->
+            <div class="filter-section">
+                <div class="section-header">
+                    <span><i class="fas fa-university"></i> Banks</span>
+                    <span class="filter-badge">{{ banks|length }} banks</span>
+                </div>
+                
+                <div class="selection-info" id="bankSelectionInfo">
+                    {% if countries|length > 0 %}
+                    Please select countries first to see available banks
+                    {% else %}
+                    No countries available
+                    {% endif %}
+                </div>
+                
+                <div class="search-container">
+                    <input type="text" class="ios-search" id="bankSearch" placeholder="Search banks..." onkeyup="filterItems('bank')" disabled>
+                </div>
+                
+                <div class="select-all-container">
+                    <input type="checkbox" id="selectAllBanks" class="ios-checkbox" onchange="toggleSelectAll('bank')" disabled>
+                    <label for="selectAllBanks" class="ios-checkbox-label">
+                        <span class="ios-checkbox-custom"></span>
+                        <span class="filter-name">Select All Banks</span>
+                    </label>
+                </div>
+                
+                <div class="section-content" id="banksContent">
                     <ul class="ios-list">
                         {% for bank in banks %}
-                        <li class="ios-list-item filter-item">
-                            <input type="checkbox" id="bank-{{ bank.id }}" name="banks" value="{{ bank.name }}" class="ios-checkbox filter-checkbox">
+                        <li class="ios-list-item filter-item bank-item hidden" data-bank="{{ bank.name }}">
+                            <input type="checkbox" id="bank-{{ bank.id }}" name="banks" value="{{ bank.name }}" class="ios-checkbox bank-checkbox" disabled>
                             <label for="bank-{{ bank.id }}" class="ios-checkbox-label">
                                 <span class="ios-checkbox-custom"></span>
                                 <div class="filter-info">
                                     <div class="filter-name">{{ bank.name }}</div>
                                     <div class="filter-details">
                                         <span class="filter-badge">{{ bank.count }} cards</span>
-                                        <span class="type-badge">{{ bank.types|join(', ') }}</span>
+                                        <span class="filter-badge">{{ bank.types|join(', ') }}</span>
                                     </div>
                                 </div>
                             </label>
@@ -499,24 +479,35 @@ HTML_TEMPLATE = """
                         {% endfor %}
                     </ul>
                 </div>
+            </div>
 
-                <!-- Types Tab -->
-                <div id="typesTab" class="filter-content">
-                    <div class="ios-card-header">
-                        <span>Card Types <i class="fas fa-credit-card"></i></span>
-                        <span class="filter-badge">{{ types|length }}</span>
-                    </div>
+            <!-- Card Types Section -->
+            <div class="filter-section">
+                <div class="section-header">
+                    <span><i class="fas fa-credit-card"></i> Card Types</span>
+                    <span class="filter-badge">{{ card_types|length }} types</span>
+                </div>
+                
+                <div class="select-all-container">
+                    <input type="checkbox" id="selectAllTypes" class="ios-checkbox" onchange="toggleSelectAll('type')">
+                    <label for="selectAllTypes" class="ios-checkbox-label">
+                        <span class="ios-checkbox-custom"></span>
+                        <span class="filter-name">Select All Types</span>
+                    </label>
+                </div>
+                
+                <div class="section-content">
                     <ul class="ios-list">
-                        {% for type in types %}
+                        {% for type in card_types %}
                         <li class="ios-list-item filter-item">
-                            <input type="checkbox" id="type-{{ type.id }}" name="types" value="{{ type.name }}" class="ios-checkbox filter-checkbox">
+                            <input type="checkbox" id="type-{{ type.id }}" name="types" value="{{ type.name }}" class="ios-checkbox type-checkbox">
                             <label for="type-{{ type.id }}" class="ios-checkbox-label">
                                 <span class="ios-checkbox-custom"></span>
                                 <div class="filter-info">
                                     <div class="filter-name">{{ type.name }}</div>
                                     <div class="filter-details">
                                         <span class="filter-badge">{{ type.count }} cards</span>
-                                        <span class="bank-badge">{{ type.banks|length }} banks</span>
+                                        <span class="filter-badge">{{ type.banks|length }} banks</span>
                                     </div>
                                 </div>
                             </label>
@@ -524,14 +515,14 @@ HTML_TEMPLATE = """
                         {% endfor %}
                     </ul>
                 </div>
-            </form>
-        </div>
+            </div>
 
-        <button type="submit" form="filterForm" class="ios-button" onclick="showSuccessAnimation()">
-            <i class="fas fa-check"></i> APPLY FILTERS
-        </button>
+            <button type="submit" class="ios-button" id="applyButton" onclick="showSuccessAnimation()">
+                <i class="fas fa-check"></i> APPLY FILTERS
+            </button>
+        </form>
 
-        <div class="success-animation" id="successAnimation">
+        <div class="success-animation" id="successAnimation" style="display: none;">
             <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
                 <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
                 <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
@@ -539,54 +530,119 @@ HTML_TEMPLATE = """
             <div class="success-message">Filter Applied!</div>
             <div class="success-details">Return to Telegram to get your results</div>
         </div>
-
-        <div class="ios-footer">
-            <p>Advanced filtering with <i class="fas fa-heart" style="color:var(--ios-red)"></i> iOS design</p>
-        </div>
     </div>
 
     <script>
-        function showFilterTab(tabName) {
-            // Update tabs
-            document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.filter-content').forEach(content => content.classList.remove('active'));
+        let selectedCountries = new Set();
+        let availableBanks = {{ banks|tojson }};
+        let countryBankMap = {{ country_bank_map|tojson }};
+
+        function toggleCountry(countryCode) {
+            const countryItem = document.querySelector(`.country-item[data-country="${countryCode}"]`);
             
-            event.target.classList.add('active');
-            document.getElementById(tabName + 'Tab').classList.add('active');
+            if (selectedCountries.has(countryCode)) {
+                selectedCountries.delete(countryCode);
+                countryItem.classList.remove('selected');
+            } else {
+                selectedCountries.add(countryCode);
+                countryItem.classList.add('selected');
+            }
             
-            // Reset search
-            document.getElementById('searchInput').value = '';
-            filterItems();
+            // Update hidden input
+            document.getElementById('selectedCountries').value = Array.from(selectedCountries).join(',');
+            
+            // Update banks based on selected countries
+            updateAvailableBanks();
         }
 
-        function filterItems() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const activeTab = document.querySelector('.filter-content.active').id;
-            const filterItems = document.querySelectorAll('#' + activeTab + ' .filter-item');
+        function updateAvailableBanks() {
+            const bankSearch = document.getElementById('bankSearch');
+            const selectAllBanks = document.getElementById('selectAllBanks');
+            const bankSelectionInfo = document.getElementById('bankSelectionInfo');
             
-            filterItems.forEach(item => {
-                const filterName = item.querySelector('.filter-name').textContent.toLowerCase();
-                if (filterName.includes(searchTerm)) {
-                    item.style.display = 'flex';
+            if (selectedCountries.size === 0) {
+                // No countries selected
+                bankSearch.disabled = true;
+                selectAllBanks.disabled = true;
+                bankSelectionInfo.innerHTML = 'Please select countries first to see available banks';
+                
+                // Hide all banks
+                document.querySelectorAll('.bank-item').forEach(item => {
+                    item.classList.add('hidden');
+                    const checkbox = item.querySelector('.bank-checkbox');
+                    checkbox.checked = false;
+                    checkbox.disabled = true;
+                });
+                
+                return;
+            }
+            
+            // Enable bank search and select all
+            bankSearch.disabled = false;
+            selectAllBanks.disabled = false;
+            
+            // Get banks available in selected countries
+            let availableBankNames = new Set();
+            selectedCountries.forEach(countryCode => {
+                const banksInCountry = countryBankMap[countryCode] || [];
+                banksInCountry.forEach(bank => availableBankNames.add(bank));
+            });
+            
+            // Update bank selection info
+            bankSelectionInfo.innerHTML = `Showing banks for <strong>${selectedCountries.size}</strong> selected countries`;
+            
+            // Show/hide banks based on availability
+            document.querySelectorAll('.bank-item').forEach(item => {
+                const bankName = item.dataset.bank;
+                const checkbox = item.querySelector('.bank-checkbox');
+                
+                if (availableBankNames.has(bankName)) {
+                    item.classList.remove('hidden');
+                    checkbox.disabled = false;
+                } else {
+                    item.classList.add('hidden');
+                    checkbox.checked = false;
+                    checkbox.disabled = true;
+                }
+            });
+        }
+
+        function showMore(elementId, button) {
+            const element = document.getElementById(elementId);
+            element.classList.remove('hidden');
+            button.style.display = 'none';
+        }
+
+        function filterItems(type) {
+            const searchTerm = document.getElementById(type + 'Search').value.toLowerCase();
+            const items = document.querySelectorAll('.' + type + '-item');
+            
+            items.forEach(item => {
+                if (item.classList.contains('hidden')) return;
+                
+                const name = item.querySelector('.filter-name')?.textContent.toLowerCase() || 
+                            item.querySelector('.country-name')?.textContent.toLowerCase() || '';
+                
+                if (name.includes(searchTerm)) {
+                    item.style.display = type === 'country' ? 'block' : 'flex';
                 } else {
                     item.style.display = 'none';
                 }
             });
         }
 
-        function toggleSelectAll() {
-            const selectAll = document.getElementById('selectAll').checked;
-            const activeTab = document.querySelector('.filter-content.active').id;
-            const checkboxes = document.querySelectorAll('#' + activeTab + ' .filter-checkbox');
+        function toggleSelectAll(type) {
+            const selectAll = document.getElementById('selectAll' + type.charAt(0).toUpperCase() + type.slice(1));
+            const checkboxes = document.querySelectorAll('.' + type + '-checkbox:not(:disabled)');
             
             checkboxes.forEach(checkbox => {
-                checkbox.checked = selectAll;
+                checkbox.checked = selectAll.checked;
             });
         }
 
         function showSuccessAnimation() {
             document.getElementById('successAnimation').style.display = 'block';
-            document.querySelector('.ios-button').style.display = 'none';
+            document.getElementById('applyButton').style.display = 'none';
             
             // Submit form after animation
             setTimeout(() => {
@@ -594,21 +650,14 @@ HTML_TEMPLATE = """
             }, 2500);
         }
 
-        // Update select all checkbox when individual checkboxes change
-        document.querySelectorAll('.filter-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const activeTab = document.querySelector('.filter-content.active').id;
-                const allChecked = Array.from(document.querySelectorAll('#' + activeTab + ' .filter-checkbox'))
-                    .every(cb => cb.checked);
-                document.getElementById('selectAll').checked = allChecked;
-            });
-        });
-
-        // iOS-like smooth animations
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             document.body.style.opacity = 0;
             document.body.style.transition = 'opacity 0.5s ease-in-out';
             setTimeout(() => { document.body.style.opacity = 1; }, 100);
+            
+            // Initial bank update
+            updateAvailableBanks();
         });
     </script>
 </body>
@@ -646,25 +695,6 @@ def filter_cards(user_id):
         selected_banks = request.form.getlist('banks')
         selected_types = request.form.getlist('types')
         
-        if not selected_countries and not selected_banks and not selected_types:
-            return render_template_string('''
-                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                            text-align: center; padding: 80px 20px; color: #8E8E93; background: var(--ios-background); min-height: 100vh;">
-                    <div style="background: var(--ios-card-bg); padding: 40px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);">
-                        <div style="color: #FF9500; font-size: 60px; margin-bottom: 20px;">
-                            <i class="fas fa-exclamation-circle"></i>
-                        </div>
-                        <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 15px; color: var(--ios-text-primary);">No Filters Selected</h2>
-                        <p style="font-size: 18px; margin-bottom: 30px;">Please select at least one filter criteria.</p>
-                        <button onclick="window.history.back()" style="background: var(--ios-blue); color: white; border: none; 
-                                padding: 16px 32px; border-radius: 14px; font-size: 18px; font-weight: 600; cursor: pointer;
-                                box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);">
-                            Go Back
-                        </button>
-                    </div>
-                </div>
-            ''')
-        
         # تصفية البطاقات حسب المعايير المختارة
         filtered_cards = []
         for card in session_data['cards']:
@@ -680,15 +710,11 @@ def filter_cards(user_id):
             type_match = not selected_types or card_type in selected_types
             
             if country_match and bank_match and type_match:
-                # إرجاع رقم البطاقة فقط (بدون معلومات إضافية)
-                filtered_cards.append(card.split('|')[0])  # رقم البطاقة فقط
+                # إرجاع البطاقة كاملة (رقم + تاريخ + CVV)
+                filtered_cards.append(card)
         
-        # إرسال النتائج إلى المستخدم عبر البوت (أرقام البطاقات فقط)
-        if filtered_cards:
-            result = "\n".join(filtered_cards)
-            session_data['filtered_result'] = result  # فقط أرقام البطاقات
-        else:
-            session_data['filtered_result'] = ""
+        # إرسال النتائج إلى المستخدم عبر البوت (البطاقات كاملة)
+        session_data['filtered_result'] = "\n".join(filtered_cards) if filtered_cards else ""
         
         # إعلام البوت بأن التصفية اكتملت
         session_data['filter_complete'] = True
@@ -724,6 +750,7 @@ def filter_cards(user_id):
     country_stats = {}
     bank_stats = {}
     type_stats = {}
+    country_bank_map = {}
     
     for card in session_data['cards']:
         bin_code = card.split('|')[0][:6]
@@ -765,6 +792,11 @@ def filter_cards(user_id):
             }
         type_stats[card_type]['count'] += 1
         type_stats[card_type]['banks'].add(bank)
+        
+        # خريطة البنوك لكل دولة
+        if country not in country_bank_map:
+            country_bank_map[country] = set()
+        country_bank_map[country].add(bank)
     
     # تحويل المجموعات إلى قوائم
     countries = []
@@ -777,25 +809,16 @@ def filter_cards(user_id):
         bank['types'] = list(bank['types'])
         banks.append(bank)
     
-    types = []
+    card_types = []
     for card_type in type_stats.values():
         card_type['banks'] = list(card_type['banks'])
-        types.append(card_type)
-    
-    # إحصائيات إضافية
-    total_cards = len(session_data['cards'])
-    total_countries = len(countries)
-    total_banks = len(banks)
-    total_types = len(types)
+        card_types.append(card_type)
     
     return render_template_string(HTML_TEMPLATE, 
                                 countries=sorted(countries, key=lambda x: x['count'], reverse=True),
                                 banks=sorted(banks, key=lambda x: x['count'], reverse=True),
-                                types=sorted(types, key=lambda x: x['count'], reverse=True),
-                                total_cards=total_cards,
-                                total_countries=total_countries,
-                                total_banks=total_banks,
-                                total_types=total_types)
+                                card_types=sorted(card_types, key=lambda x: x['count'], reverse=True),
+                                country_bank_map=country_bank_map)
 
 @app.route('/api/set_session/<user_id>', methods=['POST'])
 def set_session_data(user_id):
