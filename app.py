@@ -1,8 +1,29 @@
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string, Response
 import threading
+import json
+from datetime import datetime, date
 
 # إنشاء تطبيق Flask
 app = Flask(__name__)
+
+# إضافة encoder مخصص للتعامل مع الكائنات غير القابلة للتسلسل
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        elif hasattr(obj, '__dict__'):
+            return obj.__dict__
+        else:
+            return str(obj)
+
+app.json_encoder = CustomJSONEncoder
+
+# دالة مساعدة لتحويل الكائنات إلى JSON بشكل آمن
+def safe_jsonify(data):
+    return app.response_class(
+        json.dumps(data, cls=CustomJSONEncoder, indent=2),
+        mimetype='application/json'
+    )
 
 # قالب HTML بتصميم iOS متقدم مع أقسام متعددة
 HTML_TEMPLATE = """
@@ -672,14 +693,14 @@ def filter_cards(user_id):
     if user_id not in user_sessions:
         return render_template_string('''
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                        text-align: center; padding: 80px 20px; color: #8E8E93; background: var(--ios-background); min-height: 100vh;">
-                <div style="background: var(--ios-card-bg); padding: 40px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);">
+                        text-align: center; padding: 80px 20px; color: #8E8E93; background: #F2F2F7; min-height: 100vh;">
+                <div style="background: #FFFFFF; padding: 40px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);">
                     <div style="color: #FF3B30; font-size: 60px; margin-bottom: 20px;">
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
-                    <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 15px; color: var(--ios-text-primary);">Session Expired</h2>
+                    <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 15px; color: #000000;">Session Expired</h2>
                     <p style="font-size: 18px; margin-bottom: 30px;">Please upload your file again in Telegram.</p>
-                    <button onclick="window.history.back()" style="background: var(--ios-blue); color: white; border: none; 
+                    <button onclick="window.history.back()" style="background: #007AFF; color: white; border: none; 
                             padding: 16px 32px; border-radius: 14px; font-size: 18px; font-weight: 600; cursor: pointer;
                             box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); transition: all 0.3s ease;">
                         Go Back
@@ -721,18 +742,18 @@ def filter_cards(user_id):
         
         return render_template_string('''
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                        text-align: center; padding: 80px 20px; background: var(--ios-background); min-height: 100vh;">
-                <div style="background: var(--ios-card-bg); padding: 40px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);">
+                        text-align: center; padding: 80px 20px; background: #F2F2F7; min-height: 100vh;">
+                <div style="background: #FFFFFF; padding: 40px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);">
                     <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" style="width: 80px; height: 80px; margin: 0 auto 20px;">
                         <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" style="stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 5; stroke-miterlimit: 10; stroke: #34C759; fill: none; animation: stroke 0.6s cubic-bezier(0.650, 0.000, 0.450, 1.000) forwards;"/>
                         <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" style="transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; stroke-width: 5; stroke: #34C759; stroke-miterlimit: 10; animation: stroke 0.3s cubic-bezier(0.650, 0.000, 0.450, 1.000) 0.8s forwards;"/>
                     </svg>
                     <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 15px; color: #34C759;">Filter Applied Successfully!</h2>
-                    <p style="font-size: 18px; color: var(--ios-text-secondary); margin-bottom: 25px;">
-                        Found <strong style="color: var(--ios-blue);">{{ filtered_count }}</strong> matching cards
+                    <p style="font-size: 18px; color: #8E8E93; margin-bottom: 25px;">
+                        Found <strong style="color: #007AFF;">{{ filtered_count }}</strong> matching cards
                     </p>
-                    <div style="background: var(--ios-gray-4); padding: 20px; border-radius: 14px; margin: 20px 0;">
-                        <p style="font-size: 16px; color: var(--ios-text-secondary); font-weight: 500;">
+                    <div style="background: #F2F2F7; padding: 20px; border-radius: 14px; margin: 20px 0;">
+                        <p style="font-size: 16px; color: #8E8E93; font-weight: 500;">
                             Return to Telegram to download your filtered cards file
                         </p>
                     </div>
@@ -823,29 +844,40 @@ def filter_cards(user_id):
 @app.route('/api/set_session/<user_id>', methods=['POST'])
 def set_session_data(user_id):
     """واجهة برمجية لوضع بيانات الجلسة من البوت"""
-    data = request.json
-    user_sessions[user_id] = data
-    return jsonify({"status": "success", "message": "Session data stored"})
+    try:
+        data = request.get_json()
+        if data is None:
+            return safe_jsonify({"status": "error", "message": "Invalid JSON data"})
+        
+        user_sessions[user_id] = data
+        return safe_jsonify({"status": "success", "message": "Session data stored"})
+    
+    except Exception as e:
+        return safe_jsonify({"status": "error", "message": str(e)})
 
 @app.route('/api/get_result/<user_id>', methods=['GET'])
 def get_filter_result(user_id):
     """واجهة برمجية للحصول على نتيجة التصفية"""
-    if user_id not in user_sessions:
-        return jsonify({"status": "error", "message": "Session not found"})
+    try:
+        if user_id not in user_sessions:
+            return safe_jsonify({"status": "error", "message": "Session not found"})
+        
+        session_data = user_sessions[user_id]
+        
+        if 'filtered_result' in session_data:
+            result = session_data['filtered_result']
+            # حذف الجلسة بعد استرجاع النتيجة
+            del user_sessions[user_id]
+            return safe_jsonify({"status": "success", "result": result})
+        else:
+            return safe_jsonify({"status": "pending", "message": "Filter not complete yet"})
     
-    session_data = user_sessions[user_id]
-    
-    if 'filtered_result' in session_data:
-        result = session_data['filtered_result']
-        # حذف الجلسة بعد استرجاع النتيجة
-        del user_sessions[user_id]
-        return jsonify({"status": "success", "result": result})
-    else:
-        return jsonify({"status": "pending", "message": "Filter not complete yet"})
+    except Exception as e:
+        return safe_jsonify({"status": "error", "message": str(e)})
 
 def run_web_server():
     """تشغيل خادم الويب"""
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
 
 if __name__ == '__main__':
     # تشغيل الخادم في خيط منفصل
